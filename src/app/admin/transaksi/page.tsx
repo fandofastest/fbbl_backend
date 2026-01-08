@@ -79,6 +79,20 @@ export default function AdminTransaksiPage() {
     }
   }
 
+  async function removeTransaksi(id: string) {
+    if (!confirm("Delete transaksi?")) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await api(`/api/transaksi/${id}`, { method: "DELETE" });
+      await refreshAll();
+    } catch (e: any) {
+      setError(e?.message ?? "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     refreshAll();
   }, []);
@@ -184,9 +198,17 @@ export default function AdminTransaksiPage() {
         <div className="divide-y divide-zinc-200">
           {items.map((t) => (
             <div key={t._id} className="px-5 py-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="font-medium">{t.userId?.name ?? "-"}</div>
-                <div className="text-xs text-zinc-600">{new Date(t.createdAt).toLocaleString()}</div>
+                <div className="flex items-center gap-4">
+                  <div className="text-xs text-zinc-600">{new Date(t.createdAt).toLocaleString()}</div>
+                  <button
+                    className="text-sm font-medium text-red-700"
+                    onClick={() => removeTransaksi(t._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
               <div className="mt-1 text-xs text-zinc-700">Status: {t.status} | Total: {t.total}</div>
               <div className="mt-2 text-xs text-zinc-600">
