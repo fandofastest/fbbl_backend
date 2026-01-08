@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth";
 import { UserModel } from "@/models/User";
 
-export async function GET(req: Request, ctx: { params: { id: string } }) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     requireAdmin(req);
     await dbConnect();
 
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
     const item = await UserModel.findById(id).select("-passwordHash").lean();
     if (!item) return NextResponse.json({ error: "not found" }, { status: 404 });
     return NextResponse.json({ item });
@@ -20,12 +21,12 @@ export async function GET(req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     requireAdmin(req);
     await dbConnect();
 
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
 
     const body = (await req.json().catch(() => null)) as
       | {
@@ -62,12 +63,12 @@ export async function PATCH(req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function DELETE(req: Request, ctx: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     requireAdmin(req);
     await dbConnect();
 
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
     const deleted = await UserModel.findByIdAndDelete(id);
     if (!deleted) return NextResponse.json({ error: "not found" }, { status: 404 });
     return NextResponse.json({ ok: true });

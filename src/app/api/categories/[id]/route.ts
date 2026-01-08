@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth";
 import { CategoryModel } from "@/models/Category";
@@ -11,12 +12,12 @@ function slugify(input: string): string {
     .replace(/(^-|-$)+/g, "");
 }
 
-export async function GET(req: Request, ctx: { params: { id: string } }) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     requireAdmin(req);
     await dbConnect();
 
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
     const item = await CategoryModel.findById(id).lean();
     if (!item) return NextResponse.json({ error: "not found" }, { status: 404 });
     return NextResponse.json({ item });
@@ -27,12 +28,12 @@ export async function GET(req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     requireAdmin(req);
     await dbConnect();
 
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
     const body = (await req.json().catch(() => null)) as
       | { name?: string; slug?: string; imageUrl?: string; isActive?: boolean }
       | null;
@@ -56,12 +57,12 @@ export async function PATCH(req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function DELETE(req: Request, ctx: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     requireAdmin(req);
     await dbConnect();
 
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
     const deleted = await CategoryModel.findByIdAndDelete(id);
     if (!deleted) return NextResponse.json({ error: "not found" }, { status: 404 });
     return NextResponse.json({ ok: true });
