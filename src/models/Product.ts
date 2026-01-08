@@ -1,4 +1,5 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import "./Category";
 
 const ProductSchema = new Schema(
   {
